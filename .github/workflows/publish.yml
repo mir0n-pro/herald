@@ -1,0 +1,59 @@
+# Herald -- publish the jars to GitHub Packages (Maven).
+# Runs when a version tag is pushed, or by hand. GitHub Packages takes a version once: publishing the
+# same version again is refused, so a fix ships as a new version.
+#
+# Herald builds on Armoury, read from Armoury's own package registry. The workflow's GITHUB_TOKEN can
+# only reach THIS repository's packages, so reading Armoury uses the repository secret GHCR_TOKEN:
+# the same personal access token (classic) the Esquire image pushes use; its packages scope covers
+# the Maven registry too.
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 24 (Temurin) + Maven cache
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "24"
+          cache: maven
+
+      # Two servers: "github" publishes here, "armoury" reads Armoury. The ids match the pom.
+      - name: Maven settings for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<'EOF'
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
+              </server>
+              <server>
+                <id>armoury</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GHCR_TOKEN}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
+      - name: Build, test, and deploy
+        run: mvn -B -ntp deploy -DdeployAtEnd=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

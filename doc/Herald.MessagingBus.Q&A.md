@@ -1,6 +1,6 @@
 <table style="width: 100%; table-layout: fixed;">
   <tr>
-    <td style="width: 12%"><img src="logo/herald.svg" alt="Herald logo" align="right" width="64" height="64"></td>
+    <td style="width: 12%"><img src="logo/herald.3.svg" alt="Herald logo" align="right" width="64" height="64"></td>
     <td style="width: 88%;"><h1>Herald Messaging Bus -- Design Q&A</h1></td>
   </tr>
 </table>

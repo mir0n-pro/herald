@@ -1,6 +1,6 @@
 <table style="width: 100%; table-layout: fixed;">
   <tr>
-    <td style="width: 12%"><img src="logo/herald.svg" alt="Herald logo" align="right" width="64" height="64"></td>
+    <td style="width: 12%"><img src="logo/herald.3.svg" alt="Herald logo" align="right" width="64" height="64"></td>
     <td style="width: 88%;"><h1>Herald Messaging Bus -- Continuing Development</h1></td>
   </tr>
 </table>
@@ -215,7 +215,7 @@ the sharpest case for building it.
 **Independent of the policy, and true whichever way it lands: neither exit is visible.** Full-past-timeout logs
 to the DEVELOP tier -- a file on docker, off on k8s under the o11y arms -- and the stopped exit logs nothing at
 all, while the SEND half of the same path carries a meter, a main-tier log and a shipped alert. The rig already
-has an `IErrorListener` seam, so `mir0n-utils` need not learn about meters: the rig reports the drop, the
+has an `IErrorListener` seam, so `armoury-utils` need not learn about meters: the rig reports the drop, the
 messaging layer logs it on the main tier and counts `messaging.feed.dropped.total{reason=full|stopped}` --
 matching the send side so the existing alert story extends rather than being reinvented. The two reasons want
 separate tags: "we are overloaded" and "shutdown ate it" are different operational facts.
@@ -704,7 +704,7 @@ traces -- and the alive rate is fixed by the cadence rather than by load, so the
 **The rule this serves:** a bad configuration stops, a bad message is recorded and the worker carries on
 (`Esquire.Q&A.md`). The rig's part of that rule is narrow: it NOTIFIES the outcome of every item. What an
 outcome MEANS is the owner's -- a meter, a REJECT on the bus, a status transition, nothing at all. The rig has
-no opinion, and `mir0n-utils` carries no meter dependency to give it one.
+no opinion, and `armoury-utils` carries no meter dependency to give it one.
 
 **The seam is symmetric** (`IQueueRig`):
 
@@ -772,7 +772,7 @@ handle a failure -- a refused sync and a park are exactly the events someone ask
 third is thinner: CLEAR runs at bootstrap and is followed by a LOAD whose outcome is counted, so a failed wipe
 is visible one step later.
 
-Whatever is added belongs to the OWNER, not the rig: `AMonadY` lives in `mir0n-utils` and must keep its zero
+Whatever is added belongs to the OWNER, not the rig: `AMonadY` lives in `armoury-taijitu` and must keep its zero
 meter dependency, so a Monad counter would be raised by the bizTree subclass, not by the monad itself.
 
 **Still open -- the receive leg.** It is a `WorkerPool`, not a rig, so it has no seam: its `catch (Throwable)`
@@ -931,51 +931,103 @@ is outside the sprint, and a stub created only to hold one cross-reference would
 cross-reference living where it is.
 
 ---
-## 23. Changing a messaging param on a running service -- SETTLED: a restart, and that is enough
+## 23. Changing a messaging setting while a service runs -- not supported: restart the service
 
-**Decided 2026-08-31:** *"if we even need to change a parameter we should just start/stop service.
-and that is enough; no change on-a-fly we support for messaging configuration - that is endless work : to
-make that properly."* On-the-fly reconfiguration of the bus is a **non-goal**. This item exists so the
-question is not re-opened from scratch, and so the two facts it turned up are written down.
+**Decided (2026-08-31).** The bus does not change its configuration while a service is running. To change a
+messaging setting, edit the configuration and restart the service. Doing live changes properly would be a
+large job with no clear end, and a restart already does what is needed.
 
-**What we already have, and it is enough.** Every transport param is declared per leg in the topology --
-`persistent` sits on the x-rod's ActiveMQ transport params like any other -- and it is already set per
-environment: `false` on our own broker, which persists nothing, `true` on Amazon MQ, which always has
-storage. Nothing about it is hardcoded. Changing it is an edit and a restart.
+This item records that decision, so the question does not start again from zero. It also records two facts
+that came up on the way.
 
-**A service CAN override it, at WHOLE-GROUP granularity -- this is the part worth knowing.** A service-level
-ref (`esquire.<key>.messaging-bus.x-rod`) is layered onto the catalog leg by `XRodParams.merge`, and
-`overlayGroups` works per **top-level group**: `transport.params.persistent` flattens to the group
-`transport`, so naming it drops the base's WHOLE `transport` block -- provider, endpoint, destination and
-every other param with it. So a service that wants to change one transport param has to restate the whole
-transport block for that leg. Group-level replacement is the same rule an R&R node already follows, and it
-is deliberate; it just means "override one param from the service" is not a one-liner, and a half-written
-override fails the leg rather than half-applying.
+### A restart is enough
 
-**Why it came up, and what to do instead.** v1.2.14 T3.1 wanted to measure what `persistent` costs on Amazon
-MQ. The flag lives in the shared topology, so an A/B needed a pod roll, and a rolled pod is cold: six
-120-second, 16-VU runs on EKS gave mean response times of 338 -> 200 -> 139 ms across SUCCESSIVE runs with
-nothing changed. The drift between two identical runs was 61 ms against a 13 ms effect.
+Every transport setting is written per leg, in the topology. For example, `persistent` is one of the
+ActiveMQ transport params of a leg, like any other param. Esquire already sets it per environment: `false`
+on its own broker, which keeps nothing on disk, and `true` on Amazon MQ, which always has storage. Nothing
+about it is fixed in code. To change it, you edit the topology and restart the service.
 
-**The lesson is about the instrument, not the configuration.** A load test cannot measure a setting whose
-change costs the warm state. Measure it directly instead: `k8s-aws/mq-probe` puts both modes in ONE warm
-process on ONE connection inside the VPC, and answered it in thirty seconds -- 0.073 ms against 11.217 ms
-per send. Reaching for live reconfiguration to rescue a load test is solving the wrong problem.
+### A service can override a setting, but only a whole group at a time
 
-**What building it would have cost, for the record.** Something has to know the topology's schema
-(`esquire.messaging-bus[bus-id] -> slots[slot-id] -> x-rod -> transport -> params`, plus the group-replacement
-rule above). The messaging module knows it; a driver does not -- it receives a flat map and never sees a
-bus-id. So a driver-side re-read means a second config reader with its own parser, watch and fallback rules,
-written again per driver. The framework-side version means re-binding the catalog, detecting change, and a
-per-provider answer to "what do I do with new settings" -- and four of the five providers have no
-delivery-mode concept to change at all. Neither is small, which is exactly the "endless work" the decision
-names.
+A service can give its own values for a leg, under `esquire.<key>.messaging-bus.x-rod`. `XRodParams.merge`
+lays them over the catalog's values. It does this per top-level group, not per key.
+
+For example, the key `transport.params.persistent` belongs to the group `transport`. A service that sets
+only this one key replaces the catalog's WHOLE `transport` group with it. The provider, the endpoint, the
+destination, and every other transport param are gone for that leg.
+
+So a service that wants to change one transport param has to write out the whole `transport` block for
+that leg. This is on purpose: an R&R node is overlaid by the same rule. An incomplete override does not
+apply half of the settings; the leg fails instead.
+
+One line in a service is not enough. The whole block is.
+
+### Why the question came up, and the better answer
+
+In Esquire's v1.2.14 sprint we wanted to know what `persistent` costs on Amazon MQ. The setting lives in
+the shared topology, so testing both values meant restarting the pods between load-test runs. A restarted
+pod starts cold: nothing in it is warmed up yet.
+
+Six load-test runs on EKS, each 120 seconds with 16 virtual users, gave mean response times of 338 ms,
+then 200 ms, then 139 ms, in runs one after another with nothing changed. Two identical runs differed by
+61 ms. The effect we wanted to measure was 13 ms.
+
+The lesson is about the measuring tool, not about the configuration. A load test cannot measure a setting
+when changing that setting throws away the warm state. Esquire measured it directly instead: a small probe
+program (`k8s-aws/mq-probe`, in the Esquire services repository) sends in both modes from one warm
+process, over one connection, inside the same AWS network. It answered in thirty seconds: 0.073 ms per
+send without persistence, 11.217 ms with it.
+
+Live reconfiguration would not have saved the load test. The probe was the right tool.
+
+### What building it would cost
+
+Something has to understand the shape of the topology:
+`esquire.messaging-bus[bus-id] -> slots[slot-id] -> x-rod -> transport -> params`, plus the group rule
+above. The messaging module knows this shape. A transport driver does not: it gets a flat map of settings
+and never sees a bus-id.
+
+There are two places to build it, and neither is small:
+
+- **In each driver.** Every driver needs a second configuration reader of its own: a parser, a watch for
+  changes, and rules for a bad file. This is written again for every driver.
+- **In the framework.** The framework reads the catalog again, finds what changed, and asks each provider
+  what to do with the new settings. Each provider needs its own answer. For `persistent` the answer is
+  mostly "nothing": delivery mode is a JMS idea, and only the ActiveMQ provider has it.
+
+That is the large job the decision refers to.
+
+---
+
+## 24. The configuration keys named after Herald
+
+**Today.** The bus reads its settings under keys that start with `esquire`: the shared topology under
+`esquire.messaging-bus`, and a service's own legs under `esquire.<key>.messaging-bus`. The name comes from
+the bus's first application. Herald is a product of its own now, and its keys should carry its own name.
+
+**Why it waits.** Every deployment carries these keys. Renaming them changes a contract: the configuration
+of every application on the bus moves with it, and its whole suite has to prove the move. It is not part
+of v2.0.0. Herald plans it and sets its time on its own schedule.
+
+---
+
+## 25. The lab -- the bus with no Esquire present
+
+**Today.** The bus is proved end to end only inside Esquire, its first application. Herald builds and tests
+on its own, but no running system uses the bus without Esquire around it.
+
+**The fuller form.** A lab: minimal services that load only the messaging layer, so the bus can be run,
+loaded and measured with no Esquire present. It is not part of v2.0.0. Herald plans it and sets its time on
+its own schedule.
+
 ---
 
 ## Related parked items
 
-- Transport SPI is ActiveMQ-shaped; selector / `key()` / durability differ per driver -- the per-driver selector
-  design direction.
-- Loss-visibility drop counters -- make a dropped broadcast observable rather than silent.
-- DB-pool durability (pgjdbc `socketTimeout` / `tcpKeepAlive`; the `isValid()`-on-a-half-open-socket gap that
-  makes an in-process keep rod's datasource health blind on k8s) -- belongs to the item-8 k8s durability gate.
+- **The transport interface follows ActiveMQ.** Message selectors, the message key (`key()`), and
+  durability work differently in each driver. The direction is a selector design per driver.
+- **Drop counters.** A dropped broadcast should be counted and visible, not silent.
+- **The database pool on a broken connection.** A connection can stay open on the client side after the
+  other side is gone. On it, `isValid()` waits and does not fail, so the health of an in-process keep
+  x-rod's datasource cannot see a dead database on k8s. The pgjdbc settings `socketTimeout` and
+  `tcpKeepAlive` address it. It belongs with the work on durability on k8s.

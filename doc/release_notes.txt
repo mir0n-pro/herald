@@ -1,0 +1,26 @@
+Herald 2.0
+Herald -- messaging, dataKeep, tp-activemq, tp-kafka, tp-redis, tp-sqns, tp-kinesis
+
+v2.0.0-2610.1419  v2.0.0 -- the first release: the messaging framework leaves Esquire
+    :Refactoring: herald-messaging, the framework, comes from Esquire services, where it was
+                  messaging
+    :Refactoring: herald-dataKeep, the keep that writes bus messages into a database, comes from
+                  Esquire services; it no longer depends on the Esquire common library
+    :Refactoring: the transports come from Esquire services: herald-tp-activemq, herald-tp-kafka,
+                  herald-tp-redis, herald-tp-sqns, herald-tp-kinesis
+    :Doc:         README.md
+                  doc\Herald.MessagingBus.md
+                  doc\Herald.MessagingBus.Guides.md
+                  doc\Herald.MessagingBus.MessageStructure.md
+                  doc\Herald.MessagingBus.Q&A.md
+                  doc\Herald.MessagingBus.ContinuingDev.md
+    Components:   messaging (new),
+                  dataKeep (new),
+                  tp-activemq (new),
+                  tp-kafka (new),
+                  tp-redis (new),
+                  tp-sqns (new),
+                  tp-kinesis (new)
+
+    The history before v2.0.0 is in the Esquire release notes, release v1.2.16:
+      https://github.com/mir0n-pro/esquire.services/blob/release/v1.2.16/doc/release_notes.txt

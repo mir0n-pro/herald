@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>pro.mir0n</groupId>
+    <artifactId>herald-parent</artifactId>
+<!--xxx: we need a stable parent version to be referenced correctly -->
+    <version>2.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>Herald</name>
+    <organization>
+        <name>mir0n.pro</name>
+    </organization>
+    <url/>
+
+    <description>
+        Herald Messaging Framework: the bus that carries word between services and keeps the roll of who
+        is on it. messaging is the framework (catalog, x-rod engine, transport SPI, codec); tp-* are the
+        transport providers, one per vendor; dataKeep is the keep library that stores what the bus relays.
+        No Esquire inside -- it sits on Armoury and under any domain.
+    </description>
+
+    <modules>
+        <module>messaging</module>
+        <module>dataKeep</module>
+        <module>tp-activemq</module>
+        <module>tp-redis</module>
+        <module>tp-kafka</module>
+        <module>tp-sqns</module>
+        <module>tp-kinesis</module>
+    </modules>
+
+    <properties>
+        <version-qualifier></version-qualifier>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyMM.ddHH</maven.build.timestamp.format>
+        <!-- build properties -->
+        <java.version>24</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- versions of modules -->
+<!--
+  The idea :
+   Herald is a single Product but it has a set of projects.
+   They might have their own versioning
+-->
+        <herald.version>2.0.0</herald.version>
+        <messaging.version>${herald.version}</messaging.version>
+        <dataKeep.version>${herald.version}</dataKeep.version>
+        <tp.version>${herald.version}</tp.version>
+
+        <!-- Armoury sits upstream: utils is the bottom of the stack, and carries the meter / trace
+             facades under pro.mir0n.o11y. -->
+        <armoury.version>2.0.0</armoury.version>
+
+        <!-- library versions -->
+        <spring-boot.version>3.5.9</spring-boot.version>
+        <aws-sdk.version>2.54.6</aws-sdk.version>
+        <jackson.version>2.18.2</jackson.version>
+
+        <!-- plugin versions -->
+        <maven.compiler.version>3.13.0</maven.compiler.version>
+        <maven.jar.version>3.4.2</maven.jar.version>
+        <maven.resources.version>3.3.1</maven.resources.version>
+        <maven.dependency.version>3.7.0</maven.dependency.version>
+        <maven.surefire.version>3.2.5</maven.surefire.version>
+        <jacoco.version>0.8.13</jacoco.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Armoury. Pinned here so no project states a version of it. -->
+            <dependency>
+                <groupId>pro.mir0n</groupId>
+                <artifactId>armoury-utils</artifactId>
+                <version>${armoury.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.version}</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <release>${maven.compiler.release}</release>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven.jar.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven.resources.version}</version>
+                </plugin>
+
+                <!-- Only the AWS transport providers use it: they copy their runtime tail into
+                     target/aws-lib, which a deployment attaches instead of building it into an image. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven.dependency.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.version}</version>
+            </plugin>
+            <!-- Code coverage: prepare-agent instruments the forked test JVM (surefire), so every test that
+                 runs in it is measured: the unit tests and the in-JVM Testcontainers / @SpringBootTest
+                 ones alike. One report per project at target/site/jacoco/index.html. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,44 @@
+/*
+ *  Herald Messaging Framework (tm)
+ *  messaging -- the bus, tests
+ *
+ *  Copyright(c) 2001, 2026 mir0n&co www.mir0n.pro
+ *  mailto:mir0n.the.programmer@gmail.com
+ */
+package pro.mir0n.messaging;
+
+import pro.mir0n.messaging.transport.ConsumeSettings;
+import pro.mir0n.messaging.transport.ITransportProvider;
+import pro.mir0n.messaging.transport.PublishSettings;
+import pro.mir0n.messaging.transport.TransportConsumer;
+import pro.mir0n.messaging.transport.TransportHealth;
+import pro.mir0n.messaging.transport.TransportMessage;
+import pro.mir0n.messaging.transport.TransportPublisher;
+
+import java.util.function.Consumer;
+
+/** Resolved by full class name. A produce-only transport: {@code supportsConsume()} / {@code supportsBothLegs()}
+ *  both false -- a CLIENT role fails fast, a SERVER (producer) is fine. The publisher reports DOWN health so
+ *  a SERVER rod's {@code health()} reflects the transport indicator (proving health folds the transport). */
+public class ProducerOnlyTransportProvider implements ITransportProvider {
+
+    @Override
+    public boolean supportsConsume() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsBothLegs() {
+        return false;
+    }
+
+    @Override
+    public TransportPublisher openPublisher(String destination, PublishSettings s) {
+        return TransportPublisher.of(msg -> { }, () -> { }, () -> TransportHealth.DOWN);
+    }
+
+    @Override
+    public TransportConsumer openConsumer(String destination, ConsumeSettings s, Consumer<TransportMessage> handler) {
+        throw new UnsupportedOperationException("produce-only test transport");
+    }
+}

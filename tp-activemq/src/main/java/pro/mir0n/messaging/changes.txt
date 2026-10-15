@@ -1,0 +1,16 @@
+herald messaging helper classes -- pro.mir0n.messaging.jms
+
+10/13/2026 mir0n  v2.0.0 -- moved into Herald with tp-activemq
+jms.Utils
+  - package pro.mir0n.esquire.messaging.jms -> pro.mir0n.messaging.jms; the masthead is the Herald
+    Messaging Framework. One U+2014 em dash in a javadoc line replaced with -- , the house ASCII rule.
+    It still ships in the tp-activemq jar, in a messaging package: that split is as it was
+
+06/24/2026 mir0n  v1.2.9 -- EsqMsgConstants references repointed
+tp.activemq.TransportProvider
+  - EsqMsgConstants wire constants -> messaging.BusConstants (references repointed)
+
+04/06/2026 mir0n  JMS Utils: sorted key output
+messaging.jms.Utils
+  - formatProps(Map): keys sorted alphabetically for consistent log output
+

@@ -1,0 +1,36 @@
+herald Amazon Kinesis transport provider classes -- pro.mir0n.tp.kinesis
+
+10/13/2026 mir0n  v2.0.0 -- the transport provider moves into Herald
+(every file)
+  - package pro.mir0n.esquire.tp.kinesis -> pro.mir0n.tp.kinesis; the masthead is the Herald Messaging Framework;
+    one history line per file records the move
+pom.xml
+  - artifactId herald-tp-kinesis, parent herald-parent 2.0.0, groupId pro.mir0n. The messaging dependency is
+    herald-messaging, still provided, so the aws-lib folder stays the AWS client and nothing else. lombok drops
+    out of the copy-dependencies exclude list, because Herald has none.
+
+09/01/2026 mir0n  v1.2.14 -- the stream capacity mode as a declared bus param
+tp.kinesis.TransportProvider
+  - stream.Mode and stream.ShardCount added as create-time attributes, read by streamMode() / shardCount()
+    and refused rather than guessed when unknown. A created stream is PROVISIONED at one shard instead of
+    ON_DEMAND: on-demand bills per STREAM-hour whether or not a record moves, provisioned per SHARD-hour.
+    An existing stream is left as it is, capacity mode included
+
+08/29/2026 mir0n  v1.2.14 -- the Amazon Kinesis transport provider
+tp.kinesis.TransportProvider  (new)
+  - the Amazon Kinesis ITransportProvider, both legs. An ABSENT partition-by means FIFO -- every record under
+    one key, one shard, one ordered sequence -- and naming a header opts in to spreading, which is safe only
+    where records do not depend on one another. poll-millis is the delivery latency (GetRecords is capped at
+    five a second per shard, so 200ms is the floor). The stream is ensured on first use, never when a leg opens
+tp.kinesis.KinesisConsumer  (new)
+  - the Kinesis receive leg -- one poll thread per shard over GetRecords. A stream keeps nobody position, so
+    the leg holds its own in memory and iterator-type says where a restart begins. A failed iterator is
+    RETRIED, and the stream re-made if it is gone; a shard ends only when a successful GetRecords hands back
+    no next iterator
+pom.xml  (new)
+  - the tp-kinesis module: esquire-messaging provided, the AWS SDK kinesis client, and copy-dependencies into
+    target/aws-lib so a deployment can attach the driver instead of building it into an image
+doc/tp-kinesis.md  (new)
+  - the driver's own description: shards and what order means on a stream, why an absent partition-by is FIFO
+    and why FIFO also needs a receive pool of one, the position nobody keeps, the 200ms floor, configuration,
+    the two receive filters and health

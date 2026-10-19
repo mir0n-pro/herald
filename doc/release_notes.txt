@@ -1,6 +1,14 @@
 Herald 2.0
 Herald -- messaging, dataKeep, tp-activemq, tp-kafka, tp-redis, tp-sqns, tp-kinesis
 
+v2.0.0-2610.1720  v2.0.0 -- the jars are published on GitHub Packages
+    :Config:      the jars are published to GitHub Packages, on a version tag or by hand
+                  (.github/workflows/publish.yml)
+    :Config:      the keep's Maven artifact is named herald-datakeep, all lowercase
+    :Doc:         README.md
+                  doc\Herald.MessagingBus.ContinuingDev.md
+    Components:   dataKeep
+
 v2.0.0-2610.1419  v2.0.0 -- the first release: the messaging framework leaves Esquire
     :Refactoring: herald-messaging, the framework, comes from Esquire services, where it was
                   messaging

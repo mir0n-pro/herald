@@ -29,8 +29,8 @@ does not expose is not available to the service.
 
 ## Installation
 
-Java 24 and Maven. Herald builds on [Armoury](https://github.com/mir0n-pro/armoury): install Armoury
-first.
+Java 24 and Maven. Herald builds on [Armoury](https://github.com/mir0n-pro/armoury); Maven takes
+Armoury from GitHub Packages (see below).
 
 ```
 mvn clean install
@@ -41,12 +41,49 @@ This builds the jars and installs them into the local Maven repository:
 | Maven coordinates | What it is |
 |---|---|
 | `pro.mir0n:herald-messaging:2.0.0` | The framework: the facade, the catalog, the x-rod engine, and the transport interface |
-| `pro.mir0n:herald-dataKeep:2.0.0` | The keep: writes what the bus carries into a database |
+| `pro.mir0n:herald-datakeep:2.0.0` | The keep: writes what the bus carries into a database |
 | `pro.mir0n:herald-tp-activemq:2.0.0` | The transport for ActiveMQ: queues and topics |
 | `pro.mir0n:herald-tp-kafka:2.0.0` | The transport for Kafka: topics |
 | `pro.mir0n:herald-tp-redis:2.0.0` | The transport for Redis Streams: sending only |
 | `pro.mir0n:herald-tp-sqns:2.0.0` | The transports for Amazon SQS (queues) and Amazon SNS (topics) |
 | `pro.mir0n:herald-tp-kinesis:2.0.0` | The transport for Amazon Kinesis: streams |
+
+### Using the published jars
+
+The jars are on GitHub Packages. A Maven project that uses them declares the registry:
+
+```xml
+<repositories>
+    <repository>
+        <id>herald</id>
+        <url>https://maven.pkg.github.com/mir0n-pro/herald</url>
+    </repository>
+    <repository>
+        <id>armoury</id>
+        <url>https://maven.pkg.github.com/mir0n-pro/armoury</url>
+    </repository>
+</repositories>
+```
+
+GitHub asks for a token even for a public package. Put a personal access token (classic) with the
+`read:packages` scope into `~/.m2/settings.xml`, under the same id:
+
+```xml
+<servers>
+    <server>
+        <id>herald</id>
+        <username>your-github-user</username>
+        <password>your-token</password>
+    </server>
+    <server>
+        <id>armoury</id>
+        <username>your-github-user</username>
+        <password>your-token</password>
+    </server>
+</servers>
+```
+
+Herald needs Armoury's `armoury-utils`, so both registries are listed. Maven fetches it with Herald.
 
 ---
 
@@ -95,8 +132,14 @@ This builds the jars and installs them into the local Maven repository:
 <table style="width: 100%; table-layout: fixed;">
   <tr></tr>
   <tr><td style="width: 100%;">
-    <b>herald-messaging</b>
-    <br>The framework. A service asks the <code>MessagingBus</code> facade for the x-rod of a named bus,
+    <table style="width: 100%; table-layout: fixed;">
+      <tr></tr>
+      <tr>
+        <td style="width: auto; white-space: nowrap;"><b>herald-messaging</b></td>
+        <td style="width: 100%;"><img src="./doc/logo/messaging.svg" alt="messaging logo" valign="middle" height="32"></td>
+      </tr>
+    </table>
+    The framework. A service asks the <code>MessagingBus</code> facade for the x-rod of a named bus,
        and the framework builds the rest from the catalog.
        <br> - <code>pro.mir0n.messaging</code> -- the facade, the event, and the health indicators.
        <br> - <code>pro.mir0n.messaging.catalog</code> -- the catalog: buses, slots, nodes, and roles.
@@ -109,8 +152,14 @@ This builds the jars and installs them into the local Maven repository:
   </td></tr>
 
   <tr><td style="width: 100%;">
-    <b>herald-dataKeep</b>
-    <br>A receiver that writes each message it gets into a database. The SQL is not in the code: it
+    <table style="width: 100%; table-layout: fixed;">
+      <tr></tr>
+      <tr>
+        <td style="width: auto; white-space: nowrap;"><b>herald-datakeep</b></td>
+        <td style="width: 100%;"><img src="./doc/logo/dataKeep.svg" alt="dataKeep logo" valign="middle" height="32"></td>
+      </tr>
+    </table>
+    A receiver that writes each message it gets into a database. The SQL is not in the code: it
        sits in a resource file per database, so a new database is a new file. A director class, named in
        the configuration, says which statement handles which kind of message.
        <br><br>It runs in the same process as the service, on its own connection pool. Postgres and
@@ -118,12 +167,26 @@ This builds the jars and installs them into the local Maven repository:
   </td></tr>
 
   <tr><td style="width: 100%;">
-    <b>herald-tp-*</b>
-    <br>One transport per broker: ActiveMQ, Kafka, Redis Streams, Amazon SQS and Amazon SNS, and Amazon
+    <table style="width: 100%; table-layout: fixed;">
+      <tr></tr>
+      <tr>
+        <td style="width: auto; white-space: nowrap;"><b>herald-tp-*</b></td>
+        <td style="width: 8%;"><img src="./doc/logo/activemq.svg" alt="ActiveMQ logo" valign="middle" height="24"></td>
+        <td style="width: 8%;"><img src="./doc/logo/kafka.svg" alt="Kafka logo" valign="middle" height="24"></td>
+        <td style="width: 8%;"><img src="./doc/logo/redis.svg" alt="Redis logo" valign="middle" height="24"></td>
+        <td style="width: 8%;"><img src="./doc/logo/sqs-cd.svg" alt="Amazon SQS logo" valign="middle" height="24"></td>
+        <td style="width: 8%;"><img src="./doc/logo/sns-cd.svg" alt="Amazon SNS logo" valign="middle" height="24"></td>
+        <td style="width: 8%;"><img src="./doc/logo/kinesis-cd.svg" alt="Amazon Kinesis logo" valign="middle" height="24"></td>
+        <td style="width: 8%;"><img src="./doc/logo/MQ-cd.svg" alt="Amazon MQ logo" valign="middle" height="24"></td>
+        <td style="width: 100%;"><img src="./doc/logo/msk-cd.svg" alt="Amazon MSK logo" valign="middle" height="24"></td>
+      </tr>
+    </table>
+    One transport per broker: ActiveMQ, Kafka, Redis Streams, Amazon SQS and Amazon SNS, and Amazon
        Kinesis. A service carries only the transports it uses. The ActiveMQ, Kafka, and Redis transports
        also stop Spring Boot from setting up the broker client on its own: it stays idle until the bus
        asks for it.
-       <br><br>The Redis transport sends and does not receive.
+       <br><br>Amazon MQ runs on the ActiveMQ transport and Amazon MSK on the Kafka transport, with no code
+       change. The Redis transport sends and does not receive.
   </td></tr>
 </table>
 

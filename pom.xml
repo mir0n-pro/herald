@@ -175,4 +175,25 @@
         </plugins>
     </build>
 
+    <!--xxx: GitHub Packages needs a token even for a public package; the ids match the <server>
+        entries in the settings the CI writes. A local build finds the jars in ~/.m2 first -->
+    <repositories>
+        <repository>
+            <id>armoury</id>
+            <url>https://maven.pkg.github.com/mir0n-pro/armoury</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <!--xxx: GitHub Packages: the id must match a <server> in the settings the publish workflow writes -->
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/mir0n-pro/herald</url>
+        </repository>
+    </distributionManagement>
+
 </project>

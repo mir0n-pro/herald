@@ -22,14 +22,14 @@ class BusRefBindTest {
 
     private static MockEnvironment refEnv(String roleValue) {
         MockEnvironment env = new MockEnvironment();
-        env.setProperty("esquire.kc-bus.messaging-bus.bus-id", "esquire.kc");
-        env.setProperty("esquire.kc-bus.messaging-bus.slot-id", "kc");
-        env.setProperty("esquire.kc-bus.messaging-bus.role", roleValue);
+        env.setProperty("herald.kc-bus.messaging-bus.bus-id", "esquire.kc");
+        env.setProperty("herald.kc-bus.messaging-bus.slot-id", "kc");
+        env.setProperty("herald.kc-bus.messaging-bus.role", roleValue);
         return env;
     }
 
     private static BusRef bind(MockEnvironment env) {
-        return Binder.get(env).bind("esquire.kc-bus.messaging-bus", Bindable.of(BusRef.class)).orElse(null);
+        return Binder.get(env).bind("herald.kc-bus.messaging-bus", Bindable.of(BusRef.class)).orElse(null);
     }
 
     @Test

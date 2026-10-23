@@ -26,6 +26,8 @@
  * 08/26/2026 mir0n  an op the action mapping does not cover is ignored with a named warning and counted
  *                   outcome=ignored, instead of falling through to a delete; action() answers null for it
  * 10/13/2026 mir0n  v2.0.0 -- moved into Herald: package pro.mir0n.esquire.dataKeep -> pro.mir0n.dataKeep
+ * 10/19/2026 mir0n  v2.0.1 -- the meters herald.keep.write.total / herald.keep.write.duration (were
+ *                   esq.biz.keep.write.*), the trace mark herald.keep.apply (was esq.keep.apply)
  */
 package pro.mir0n.dataKeep.keep;
 
@@ -92,14 +94,14 @@ public class RodEventDbWriter {
             String reason = (e == null || e.op() == null) ? "NONE" : e.op().name();
             log.warn("keep-db: IGNORED an event the keep cannot record (op={}) -- key={}, entityId={}, kind={}",
                     reason, sqlKey, e == null ? null : e.entityId(), e == null ? null : e.kind());
-            BizMeters.count("esq.biz.keep.write.total", "op", reason, "outcome", "ignored");
+            BizMeters.count("herald.keep.write.total", "op", reason, "outcome", "ignored");
             return;
         }
 
         String outcome = "error";
         long startedAt = System.nanoTime();
         try {
-            TraceMark.around("esq.keep.apply", "keep audit log", () -> {
+            TraceMark.around("herald.keep.apply", "keep audit log", () -> {
                 Map<String, Object> params = header(e, op);
                 if (e.body() != null) {
                     params.putAll(e.body());   // field names -> the SQL's data params (a DELETE body is empty)
@@ -110,8 +112,8 @@ public class RodEventDbWriter {
             outcome = "ok";
         } finally {
             //xxx: op is safe here
-            BizMeters.count("esq.biz.keep.write.total", "op", e.op().name() , "outcome", outcome);
-            BizMeters.time("esq.biz.keep.write.duration", System.nanoTime() - startedAt, "op", e.op().name());
+            BizMeters.count("herald.keep.write.total", "op", e.op().name() , "outcome", outcome);
+            BizMeters.time("herald.keep.write.duration", System.nanoTime() - startedAt, "op", e.op().name());
         }
     }
 

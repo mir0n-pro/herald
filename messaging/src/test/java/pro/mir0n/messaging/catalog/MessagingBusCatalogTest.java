@@ -16,14 +16,14 @@ class MessagingBusCatalogTest {
 
     private MessagingBusCatalog catalog() {
         MockEnvironment env = new MockEnvironment();
-        env.setProperty("esquire.messaging-bus[0].bus-id", "esquire.rod");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "rod-audit");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.rod-id", "rod.0");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.publisher-pool.size", "2");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.provider", FAKE);
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.endpoint", "tcp://localhost:61616");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.destination", "esquire.rod.audit");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.params.pubSubDomain", "false");
+        env.setProperty("herald.messaging-bus[0].bus-id", "esquire.rod");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "rod-audit");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.rod-id", "rod.0");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.publisher-pool.size", "2");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.provider", FAKE);
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.endpoint", "tcp://localhost:61616");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.destination", "esquire.rod.audit");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.params.pubSubDomain", "false");
         MessagingBusCatalog catalog = new MessagingBusCatalog(env);
         catalog.load();
         return catalog;
@@ -53,9 +53,9 @@ class MessagingBusCatalogTest {
         // the topology is a LIST used AS A MAP -- two legs sharing (bus-id, slot-id) is a config mistake the
         // catalog REJECTS at construction (was: find() warned and took the last).
         MockEnvironment env = new MockEnvironment();
-        env.setProperty("esquire.messaging-bus[0].bus-id", "esquire.rod");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "rod-audit");
-        env.setProperty("esquire.messaging-bus[0].slots[1].slot-id", "rod-audit");   // duplicate slot-id
+        env.setProperty("herald.messaging-bus[0].bus-id", "esquire.rod");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "rod-audit");
+        env.setProperty("herald.messaging-bus[0].slots[1].slot-id", "rod-audit");   // duplicate slot-id
 
         assertThatThrownBy(() -> new MessagingBusCatalog(env).load())
                 .isInstanceOf(IllegalStateException.class)
@@ -65,10 +65,10 @@ class MessagingBusCatalogTest {
     @Test
     void duplicateBusIdFailsFastAtLoad() {
         MockEnvironment env = new MockEnvironment();
-        env.setProperty("esquire.messaging-bus[0].bus-id", "esquire.rod");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "a");
-        env.setProperty("esquire.messaging-bus[1].bus-id", "esquire.rod");           // duplicate bus-id
-        env.setProperty("esquire.messaging-bus[1].slots[0].slot-id", "b");
+        env.setProperty("herald.messaging-bus[0].bus-id", "esquire.rod");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "a");
+        env.setProperty("herald.messaging-bus[1].bus-id", "esquire.rod");           // duplicate bus-id
+        env.setProperty("herald.messaging-bus[1].slots[0].slot-id", "b");
 
         assertThatThrownBy(() -> new MessagingBusCatalog(env).load())
                 .isInstanceOf(IllegalStateException.class)
@@ -79,10 +79,10 @@ class MessagingBusCatalogTest {
     void duplicateNodeIdFailsFastAtLoad() {
         // an R&R leg's transport.nodes is also a list-as-map: node-id must be unique within the x-rod.
         MockEnvironment env = new MockEnvironment();
-        env.setProperty("esquire.messaging-bus[0].bus-id", "esquire.kc");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "kc");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.nodes[0].node-id", "request");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.nodes[1].node-id", "request");  // duplicate
+        env.setProperty("herald.messaging-bus[0].bus-id", "esquire.kc");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "kc");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.nodes[0].node-id", "request");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.nodes[1].node-id", "request");  // duplicate
 
         assertThatThrownBy(() -> new MessagingBusCatalog(env).load())
                 .isInstanceOf(IllegalStateException.class)
@@ -92,13 +92,13 @@ class MessagingBusCatalogTest {
     @Test
     void transportParamsKeepDottedVendorKeysVerbatim() {
         MockEnvironment env = new MockEnvironment();
-        env.setProperty("esquire.messaging-bus[0].bus-id", "esquire.rod");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "rod-audit");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.provider", FAKE);
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.endpoint", "tcp://localhost:61616");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.destination", "esquire.rod.audit");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.params.jms.useAsyncSend", "true");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.transport.params.transport.connectTimeout", "10000");
+        env.setProperty("herald.messaging-bus[0].bus-id", "esquire.rod");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "rod-audit");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.provider", FAKE);
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.endpoint", "tcp://localhost:61616");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.destination", "esquire.rod.audit");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.params.jms.useAsyncSend", "true");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.transport.params.transport.connectTimeout", "10000");
 
         MessagingBusCatalog catalog = new MessagingBusCatalog(env);
         catalog.load();
@@ -154,14 +154,14 @@ class MessagingBusCatalogTest {
 
     @Test
     void catalogUnionsSharedTopologyWithServiceLocalLegs() {
-        // the catalog = the shared cross-service topology (esquire.messaging-bus, the imported file) UNIONED with
+        // the catalog = the shared cross-service topology (herald.messaging-bus, the imported file) UNIONED with
         // each service's OWN topology (<spring.application.name>.messaging-bus) -- this is how a service
         // adds its in-process audit-b leg on top of the shared buses. BOTH keys' legs must resolve.
         MockEnvironment env = new MockEnvironment();
         env.setProperty("spring.application.name", "enyman");
-        env.setProperty("esquire.messaging-bus[0].bus-id", "audit-c");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "audit");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.rod-class", "XRod");
+        env.setProperty("herald.messaging-bus[0].bus-id", "audit-c");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "audit");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.rod-class", "XRod");
         env.setProperty("enyman.messaging-bus[0].bus-id", "audit-b");
         env.setProperty("enyman.messaging-bus[0].slots[0].slot-id", "audit");
         env.setProperty("enyman.messaging-bus[0].slots[0].x-rod.rod-class", "XRodInProcess");
@@ -180,9 +180,9 @@ class MessagingBusCatalogTest {
         // wins), NOT a duplicate. The shared rod-class XRod is overridden by the overlay's XRodInProcess.
         MockEnvironment env = new MockEnvironment();
         env.setProperty("spring.application.name", "enyman");
-        env.setProperty("esquire.messaging-bus[0].bus-id", "audit-c");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "audit");
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.rod-class", "XRod");
+        env.setProperty("herald.messaging-bus[0].bus-id", "audit-c");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "audit");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.rod-class", "XRod");
         env.setProperty("enyman.messaging-bus[0].bus-id", "audit-c");                 // SAME bus-id
         env.setProperty("enyman.messaging-bus[0].slots[0].slot-id", "audit");         // SAME slot-id
         env.setProperty("enyman.messaging-bus[0].slots[0].x-rod.rod-class", "XRodInProcess");
@@ -199,8 +199,8 @@ class MessagingBusCatalogTest {
         // shared slot stays. Both resolve.
         MockEnvironment env = new MockEnvironment();
         env.setProperty("spring.application.name", "enyman");
-        env.setProperty("esquire.messaging-bus[0].bus-id", "esquire.kc");
-        env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", "kc");
+        env.setProperty("herald.messaging-bus[0].bus-id", "esquire.kc");
+        env.setProperty("herald.messaging-bus[0].slots[0].slot-id", "kc");
         env.setProperty("enyman.messaging-bus[0].bus-id", "esquire.kc");              // SAME bus-id
         env.setProperty("enyman.messaging-bus[0].slots[0].slot-id", "kc-extra");      // NEW slot-id
 

@@ -1,5 +1,10 @@
 herald dataKeep library -- pro.mir0n.dataKeep
 
+10/22/2026 mir0n  v2.0.1 -- the keep meters and trace mark named after Herald
+keep.RodEventDbWriter
+  - the meters herald.keep.write.total / herald.keep.write.duration (were esq.biz.keep.write.*), the trace
+    mark herald.keep.apply (was esq.keep.apply)
+
 10/13/2026 mir0n  v2.0.0 -- the keep library moves into Herald, and its last edge onto the Esquire domain goes with it
 keep.RodEventDbWriter
   - EsqBizMeters / EsqTraceMark -> pro.mir0n.o11y.BizMeters / TraceMark. These were the ONE thing that

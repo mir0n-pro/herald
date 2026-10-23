@@ -1,5 +1,14 @@
 herald messaging framework classes -- pro.mir0n.messaging
 
+10/22/2026 mir0n  v2.0.1 -- the configuration keys named after Herald
+BusConstants
+  - CONFIG_ROOT = "herald" (was "esquire"): the shared catalog binds at herald.messaging-bus, a service's
+    bus ref at herald.<key>.messaging-bus
+MessagingBus
+  - the javadoc and the comments name the bus refs herald.<key>.messaging-bus
+catalog.MessagingBusCatalog
+  - the javadoc names the catalog key herald.messaging-bus and the bus refs herald.<bus-key>.messaging-bus
+
 10/13/2026 mir0n  v2.0.0 -- the bus becomes the Herald Messaging Framework
 BusConstants
   - CONFIG_ROOT: the root of the bus CONFIGURATION namespace, which used to be the literal "esquire"

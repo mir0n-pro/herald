@@ -1,6 +1,25 @@
 Herald 2.0
 Herald -- messaging, dataKeep, tp-activemq, tp-kafka, tp-redis, tp-sqns, tp-kinesis
 
+v2.0.1-2610.2221  v2.0.1 -- Herald's own configuration names; a time limit for a message on ActiveMQ
+    :Config:      the bus configuration is read under herald (was esquire): the shared topology at
+                  herald.messaging-bus, a service's bus at herald.<key>.messaging-bus
+    :Config:      the keep's meters and trace are named herald.keep.*; the default Kafka consumer group
+                  is herald-xxrod-audit
+    :Feature:     an ActiveMQ leg can set how long a message may wait for a consumer (timeToLiveMs);
+                  after that the broker drops it
+    :Doc:         doc\Herald.MessagingBus.md
+                  doc\Herald.MessagingBus.Guides.md
+                  doc\Herald.MessagingBus.MessageStructure.md
+                  doc\Herald.MessagingBus.Q&A.md
+                  doc\Herald.MessagingBus.ContinuingDev.md
+                  doc\img\messaging-bus-params.svg
+                  the Herald logo
+    Components:   messaging,
+                  dataKeep,
+                  tp-activemq,
+                  tp-kafka
+
 v2.0.0-2610.1720  v2.0.0 -- the jars are published on GitHub Packages
     :Config:      the jars are published to GitHub Packages, on a version tag or by hand
                   (.github/workflows/publish.yml)

@@ -13,7 +13,7 @@
   <!-- two sources -->
   <rect x="30" y="68" width="210" height="44" rx="7" fill="#f7f9fb" stroke="#c3cedb" stroke-width="1.4" stroke-dasharray="4 3"/>
   <text x="135" y="86" text-anchor="middle" font-weight="600" fill="#2b3a4b">Shared topology</text>
-  <text x="135" y="102" text-anchor="middle" font-size="11" fill="#54627a">esquire.messaging-bus</text>
+  <text x="135" y="102" text-anchor="middle" font-size="11" fill="#54627a">herald.messaging-bus</text>
 
   <rect x="30" y="120" width="210" height="44" rx="7" fill="#f7f9fb" stroke="#c3cedb" stroke-width="1.4" stroke-dasharray="4 3"/>
   <text x="135" y="138" text-anchor="middle" font-weight="600" fill="#2b3a4b">Service-local</text>

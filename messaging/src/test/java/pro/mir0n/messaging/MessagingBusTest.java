@@ -15,22 +15,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class MessagingBusTest {
 
-    /** An env declaring one bus the service uses ({@code esquire.<key>.messaging-bus}) whose catalog slot is an
+    /** An env declaring one bus the service uses ({@code herald.<key>.messaging-bus}) whose catalog slot is an
      *  explicit XRodDisabled. roleAndSlot pick whether the ref carries a role / the catalog defines the leg. */
     private static MockEnvironment env(String key, String busId, String slotId, String role, boolean defineLeg) {
         MockEnvironment env = new MockEnvironment();
         env.setProperty("spring.application.name", "test-svc");
         // the service-level ref: which bus this service uses, and as what role.
-        env.setProperty("esquire." + key + ".messaging-bus.bus-id", busId);
-        env.setProperty("esquire." + key + ".messaging-bus.slot-id", slotId);
+        env.setProperty(BusConstants.CONFIG_ROOT + "." + key + ".messaging-bus.bus-id", busId);
+        env.setProperty(BusConstants.CONFIG_ROOT + "." + key + ".messaging-bus.slot-id", slotId);
         if (role != null) {
-            env.setProperty("esquire." + key + ".messaging-bus.role", role);
+            env.setProperty(BusConstants.CONFIG_ROOT + "." + key + ".messaging-bus.role", role);
         }
         // the catalog leg (the topology) -- an explicit disabled slot, so build/init/start need no broker.
         if (defineLeg) {
-            env.setProperty("esquire.messaging-bus[0].bus-id", busId);
-            env.setProperty("esquire.messaging-bus[0].slots[0].slot-id", slotId);
-            env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.rod-class", "XRodDisabled");
+            env.setProperty("herald.messaging-bus[0].bus-id", busId);
+            env.setProperty("herald.messaging-bus[0].slots[0].slot-id", slotId);
+            env.setProperty("herald.messaging-bus[0].slots[0].x-rod.rod-class", "XRodDisabled");
         }
         return env;
     }
@@ -83,7 +83,7 @@ class MessagingBusTest {
 
     @Test
     void init_scanForm_buildsEveryRoleDeclaredBus_thenStartCloseAreClean() {
-        // the scan form discovers the buses from config (esquire.<key>.messaging-bus.role); the full lifecycle
+        // the scan form discovers the buses from config (herald.<key>.messaging-bus.role); the full lifecycle
         // (init -> start -> close) runs without a broker on a disabled bus.
         MessagingBus bus = new MessagingBus();
         bus.init(env("audit", "audit-x", "audit", "SERVER", true));
@@ -101,7 +101,7 @@ class MessagingBusTest {
         // so a typo / missing class is a boot failure, not a silent skip.
         MessagingBus bus = new MessagingBus();
         MockEnvironment env = env("audit", "audit-x", "audit", "SERVER", true);
-        env.setProperty("esquire.messaging-bus[0].slots[0].x-rod.rod-class", "NoSuchRodClass");
+        env.setProperty("herald.messaging-bus[0].slots[0].x-rod.rod-class", "NoSuchRodClass");
 
         assertThatThrownBy(() -> bus.init(env, new String[]{"audit"}))
                 .isInstanceOf(IllegalStateException.class)

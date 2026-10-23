@@ -1,6 +1,6 @@
 <table style="width: 100%; table-layout: fixed;">
   <tr>
-    <td style="width: 12%"><img src="logo/herald.3.svg" alt="Herald logo" align="right" width="64" height="64"></td>
+    <td style="width: 12%"><img src="logo/herald.5.svg" alt="Herald logo" align="right" width="64" height="64"></td>
     <td style="width: 88%;"><h1>Herald Messaging Bus -- Framework</h1></td>
   </tr>
 </table>
@@ -158,7 +158,7 @@ The x-rod builds its **own** transport from the leg -- the facade re-packs nothi
 `MessagingBusCatalog` MERGES two property sources BY ID. The configuration root is `esquire` today
 (`BusConstants.CONFIG_ROOT`); the keys below are written with it.
 
-- `esquire.messaging-bus` -- the shared cross-service topology (imported from the one topology file, or
+- `herald.messaging-bus` -- the shared cross-service topology (imported from the one topology file, or
   defined inline -- the import is OPTIONAL);
 - `<spring.application.name>.messaging-bus` -- a service's OWN legs under its OWN namespace (e.g. a leg
   whose wire or backing store is service-specific). This is the service-side OVERLAY of the global catalog.
@@ -166,10 +166,10 @@ The x-rod builds its **own** transport from the leg -- the facade re-packs nothi
 The overlay merges onto the shared catalog BY ID: a service bus REPLACES the shared bus with the same
 `bus-id` (a service slot replaces the shared slot with the same `slot-id`; a new bus/slot is added).
 
-> They are bound as TWO keys + merged in code, NOT a single `esquire.messaging-bus` key across two sources:
+> They are bound as TWO keys + merged in code, NOT a single `herald.messaging-bus` key across two sources:
 > Spring binds a list by INDEX, so a higher-precedence source would REPLACE the whole list instead of
 > merging. The service overlay lives under the service's OWN top-level key, so it stays clear of the global
-> topology key and of the `esquire.<bus-key>.messaging-bus` refs.
+> topology key and of the `herald.<bus-key>.messaging-bus` refs.
 
 Each source is validated for INTERNAL uniqueness before the merge: a duplicate `bus-id` (across a list),
 `slot-id` (within a bus), or `node-id` (within an x-rod's `transport.nodes`) FAILS FAST at construction --
@@ -565,6 +565,11 @@ worse than one that will not start.
   `nested.*`, `wireFormat.*`. No per-key code. The one exception is `pubSubDomain`: it is a
   `setPubSubDomain(...)` call on the template / listener container, not a URI option, so `tp-activemq`
   reads it and excludes it from the URI append.
+- **Time-to-live** -- `transport.params.timeToLiveMs` is how long a sent message may wait for a consumer.
+  Past it the broker drops the message instead of delivering it. Absent or 0 means no expiry. It is a
+  `setTimeToLive(...)` call on the template, like `persistent`, so it stays out of the broker URI. On a
+  request leg it is set to the caller's wait: a command nobody waits for any more is never run. The broker
+  judges expiry by the sender's clock, so the clocks of the sender and the broker have to agree.
 - **Acknowledge mode and broker redelivery** -- the consumer listener runs `AUTO_ACKNOWLEDGE` (the
   `DefaultMessageListenerContainer` default; not transacted): a message is acknowledged on delivery and an
   apply failure is caught-and-logged, so the framework never NACKs or rolls a message back to the broker.
@@ -1013,11 +1018,11 @@ spring:
 ```
 
 The file is per-environment with concrete hostnames; the import is OPTIONAL (a service may define its
-catalog inline under `esquire.messaging-bus`, or not use the bus). A service references a bus by a logical
+catalog inline under `herald.messaging-bus`, or not use the bus). A service references a bus by a logical
 key, supplies its slot, and may override the leg's `x-rod` per group:
 
 ```yaml
-esquire:
+herald:
   <bus-key>:
     messaging-bus:
       bus-id:  ${...}            # a catalog bus-id
@@ -1044,7 +1049,7 @@ A leg -- bus -> slot -> `x-rod` { knobs + transport }. A single-node bus carries
 request/response bus names two nodes:
 
 ```yaml
-esquire:
+herald:
   messaging-bus:
     - bus-id: <bus-id>                   # single node (broadcast)
       slots:

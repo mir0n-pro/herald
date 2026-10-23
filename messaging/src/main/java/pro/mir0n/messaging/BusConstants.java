@@ -22,6 +22,8 @@
  *                   literal "esquire" written out at four call sites. The value is unchanged, so every
  *                   existing properties file and topology file reads as it did; it is one constant now so
  *                   that naming the namespace after this product instead is a one-line decision
+ * 10/19/2026 mir0n  v2.0.1 -- CONFIG_ROOT = "herald" (was "esquire"): the shared catalog binds at
+ *                   herald.messaging-bus, a service's bus ref at herald.<key>.messaging-bus
  */
 package pro.mir0n.messaging;
 
@@ -40,11 +42,9 @@ public class BusConstants {
      * Root of the bus CONFIGURATION namespace -- not a wire value.
      *
      * <p>The shared topology binds at {@code <CONFIG_ROOT>.messaging-bus}, and a service's own reference to a
-     * logical bus at {@code <CONFIG_ROOT>.<busKey>.messaging-bus}. It is still {@code "esquire"}, which is
-     * where the framework came from: changing it renames a key in every properties file, every topology file
-     * and every deployment that carries one, so it is a decision of its own and not a side effect of the move.
+     * logical bus at {@code <CONFIG_ROOT>.<busKey>.messaging-bus}.
      */
-    public static final String CONFIG_ROOT = "esquire";
+    public static final String CONFIG_ROOT = "herald";
 
     /** The shared topology's own key: every bus the deployment declares, bound as a list. */
     public static final String CATALOG_KEY = CONFIG_ROOT + ".messaging-bus";

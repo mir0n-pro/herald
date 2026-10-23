@@ -24,6 +24,7 @@
  *                   topic is created with a short retention via AdminClient (Kafka has no per-message TTL)
  * 08/26/2026 mir0n  the connection health seeds UNKNOWN, not UP -- nothing has proved the connection at open
  * 10/13/2026 mir0n  v2.0.0 -- moved into Herald: package pro.mir0n.esquire.tp.kafka -> pro.mir0n.tp.kafka
+ * 10/19/2026 mir0n  v2.0.1 -- DEFAULT_GROUP_ID = "herald-xxrod-audit" (was "esquire-xxrod-audit")
  */
 package pro.mir0n.tp.kafka;
 
@@ -70,7 +71,7 @@ public final class TransportProvider implements ITransportProvider {
 
     /** Kafka-only param key (transport.kafka.group-id): the consumer group id. */
     public static final String PARAM_GROUP_ID = "group-id";
-    private static final String DEFAULT_GROUP_ID = "esquire-xxrod-audit";
+    private static final String DEFAULT_GROUP_ID = "herald-xxrod-audit";
 
     /** Session (alive-protocol) messages -- HeartBeat / TestRequest -- are connectivity probes, NOT log data, so
      *  they go to a SEPARATE {@code <destination>.admin} topic rather than the append-only audit log topic. The

@@ -21,9 +21,16 @@ does not expose is not available to the service.
 
 ---
 >
-> **v2.0.0 -- the first release.** The framework was part of Esquire until now, in the services
-> repository. It keeps its history in the release notes. See [Release History](#release-history).
-> The configuration keys still start with `esquire`; a later release names them after Herald.
+> **v2.0.1 -- Herald's own names.** The framework came out of Esquire, and its configuration still
+> said so. Every key started with `esquire`. Now every key starts with `herald`: the catalog sits at
+> `herald.messaging-bus`, and a service's bus at `herald.<key>.messaging-bus`. The keep's meters, its
+> trace, and the default Kafka consumer group carry the new name too.
+>
+> There is no fallback. A key left under `esquire` is not read, so a configuration moves with this
+> version.
+>
+> An ActiveMQ leg can also put a time limit on a message: `timeToLiveMs`. A message that waits longer
+> for a consumer is dropped by the broker. See [Release History](#release-history).
 
 ---
 
@@ -40,13 +47,13 @@ This builds the jars and installs them into the local Maven repository:
 
 | Maven coordinates | What it is |
 |---|---|
-| `pro.mir0n:herald-messaging:2.0.0` | The framework: the facade, the catalog, the x-rod engine, and the transport interface |
-| `pro.mir0n:herald-datakeep:2.0.0` | The keep: writes what the bus carries into a database |
-| `pro.mir0n:herald-tp-activemq:2.0.0` | The transport for ActiveMQ: queues and topics |
-| `pro.mir0n:herald-tp-kafka:2.0.0` | The transport for Kafka: topics |
-| `pro.mir0n:herald-tp-redis:2.0.0` | The transport for Redis Streams: sending only |
-| `pro.mir0n:herald-tp-sqns:2.0.0` | The transports for Amazon SQS (queues) and Amazon SNS (topics) |
-| `pro.mir0n:herald-tp-kinesis:2.0.0` | The transport for Amazon Kinesis: streams |
+| `pro.mir0n:herald-messaging:2.0.1` | The framework: the facade, the catalog, the x-rod engine, and the transport interface |
+| `pro.mir0n:herald-datakeep:2.0.1` | The keep: writes what the bus carries into a database |
+| `pro.mir0n:herald-tp-activemq:2.0.1` | The transport for ActiveMQ: queues and topics |
+| `pro.mir0n:herald-tp-kafka:2.0.1` | The transport for Kafka: topics |
+| `pro.mir0n:herald-tp-redis:2.0.1` | The transport for Redis Streams: sending only |
+| `pro.mir0n:herald-tp-sqns:2.0.1` | The transports for Amazon SQS (queues) and Amazon SNS (topics) |
+| `pro.mir0n:herald-tp-kinesis:2.0.1` | The transport for Amazon Kinesis: streams |
 
 ### Using the published jars
 
@@ -102,6 +109,8 @@ Herald needs Armoury's `armoury-utils`, so both registries are listed. Maven fet
 ---
 
 ## Release History
+
+**[Releases.md](Releases.md)** -- every version, plus the milestone reports.
 
 **[release_notes.txt](doc/release_notes.txt)** -- the release notes, newest first.
 

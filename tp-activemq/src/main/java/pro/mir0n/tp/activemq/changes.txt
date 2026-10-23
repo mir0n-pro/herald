@@ -1,5 +1,12 @@
 herald ActiveMQ transport provider classes -- pro.mir0n.tp.activemq
 
+10/22/2026 mir0n  v2.0.1 -- the message time-to-live as a declared bus param
+TransportProvider
+  - PARAM_TIME_TO_LIVE_MS ("timeToLiveMs") added: how long a sent message may wait for a consumer, read from
+    transport.params; > 0 is applied with setTimeToLive on the publisher's JmsTemplate, absent or 0 = no
+    expiry. Excluded from withParams (a setter, not a broker-URI option); the publisher-opened devLog line
+    carries timeToLiveMs=
+
 10/13/2026 mir0n  v2.0.0 -- the transport provider moves into Herald
 META-INF/spring.factories
   - the AutoConfigurationImportFilter class name follows the package: pro.mir0n.tp.activemq.TpActiveMqAutoConfigFilter

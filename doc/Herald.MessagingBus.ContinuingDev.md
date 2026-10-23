@@ -1,6 +1,6 @@
 <table style="width: 100%; table-layout: fixed;">
   <tr>
-    <td style="width: 12%"><img src="logo/herald.3.svg" alt="Herald logo" align="right" width="64" height="64"></td>
+    <td style="width: 12%"><img src="logo/herald.5.svg" alt="Herald logo" align="right" width="64" height="64"></td>
     <td style="width: 88%;"><h1>Herald Messaging Bus -- Continuing Development</h1></td>
   </tr>
 </table>
@@ -230,6 +230,23 @@ A request/response (R&R) client sends a request **with OR without a subscription
 
 Modeled on the FIX protocol's order-status flow. Builds on the R&R rod (`XRodRR`) + the existing request/reply
 rod-id correlation -- a defined continuing-processing protocol layered on top of it.
+
+**A repeated operation -- the protocol is one half of the answer.** After a timeout the client does not know
+whether its request was applied. The reply may only be late. If the client sends the request again, the same
+operation can be applied twice -- a deposit, for example, booked two times.
+
+The protocol narrows this. An ACK or a status query tells the client what happened, so it has less reason to
+send again. It cannot rule a repeat out: a client can still resend before it asks, or after the ACK was lost.
+
+So the second half sits in the application. The business logic checks that the same operation came only once,
+and it rejects a repeat of an operation it already applied. The check belongs there because only the
+application knows what "the same operation" means -- the same request id on a deposit, for example.
+
+This is not the `ApplMsgID` guard of item 14. That guard says "I have seen this message". A resend by the
+client is a new message that carries the same operation, so a message-id check lets it through.
+
+The cost: the application keeps the ids of the operations it applied, for as long as a resend can still
+arrive. That is a store and a time window, and both have to be sized.
 
 ---
 
@@ -672,7 +689,7 @@ dropped", so it has to carry:
   was received and never applied reads as delivered.
 
 The counters themselves exist: `messaging.error.total{leg=receive}` on the leg, and
-`esq.biz.keep.write.total{outcome=error}` on the apply.
+`herald.keep.write.total{outcome=error}` on the apply.
 
 **Where it matters most:** bizTree's monad is healed regardless by the night-watch (`taijitu` + `SWAP`,
 `interval=600000ms`), so a missed apply costs a bounded window of stale reads. auKeep has no healer -- an
@@ -949,7 +966,7 @@ about it is fixed in code. To change it, you edit the topology and restart the s
 
 ### A service can override a setting, but only a whole group at a time
 
-A service can give its own values for a leg, under `esquire.<key>.messaging-bus.x-rod`. `XRodParams.merge`
+A service can give its own values for a leg, under `herald.<key>.messaging-bus.x-rod`. `XRodParams.merge`
 lays them over the catalog's values. It does this per top-level group, not per key.
 
 For example, the key `transport.params.persistent` belongs to the group `transport`. A service that sets
@@ -983,7 +1000,7 @@ Live reconfiguration would not have saved the load test. The probe was the right
 ### What building it would cost
 
 Something has to understand the shape of the topology:
-`esquire.messaging-bus[bus-id] -> slots[slot-id] -> x-rod -> transport -> params`, plus the group rule
+`herald.messaging-bus[bus-id] -> slots[slot-id] -> x-rod -> transport -> params`, plus the group rule
 above. The messaging module knows this shape. A transport driver does not: it gets a flat map of settings
 and never sees a bus-id.
 
@@ -999,15 +1016,13 @@ That is the large job the decision refers to.
 
 ---
 
-## 24. The configuration keys named after Herald
+## 24. The configuration keys named after Herald -- DONE (2.0.1)
 
-**Today.** The bus reads its settings under keys that start with `esquire`: the shared topology under
-`esquire.messaging-bus`, and a service's own legs under `esquire.<key>.messaging-bus`. The name comes from
-the bus's first application. Herald is a product of its own now, and its keys should carry its own name.
-
-**Why it waits.** Every deployment carries these keys. Renaming them changes a contract: the configuration
-of every application on the bus moves with it, and its whole suite has to prove the move. It is not part
-of v2.0.0. Herald plans it and sets its time on its own schedule.
+The bus reads its settings under its own root: the shared topology under `herald.messaging-bus`, and a
+service's own reference to a bus under `herald.<key>.messaging-bus`. The other names from its first
+application changed too: the Kafka default consumer group is `herald-xxrod-audit`, and dataKeep's meters and
+trace mark are `herald.keep.write.total`, `herald.keep.write.duration` and `herald.keep.apply`. Every
+application on the bus moves its keys with the release.
 
 ---
 

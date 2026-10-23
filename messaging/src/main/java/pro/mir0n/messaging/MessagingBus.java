@@ -24,6 +24,7 @@
  * 07/09/2026 mir0n  v1.2.11 -- instanceId(): the per-instance token now reads pro.mir0n.utils.HostId.instanceNo()
  *                   (was EsqUtils.instanceNo()); the bus no longer imports anything Esquire
  * 10/13/2026 mir0n  v2.0.0 -- moved into Herald: package pro.mir0n.esquire.messaging -> pro.mir0n.messaging
+ * 10/19/2026 mir0n  v2.0.1 -- the javadoc and the comments name the bus refs herald.<key>.messaging-bus
  */
 package pro.mir0n.messaging;
 
@@ -60,7 +61,7 @@ import java.util.regex.Pattern;
  * <ul>
  *   <li>{@link #init} (the Environment is ready, the context is not) -- load + validate the bus
  *       {@link MessagingBusCatalog}, then for every service-level ref that DECLARES a role
- *       ({@code esquire.<key>.messaging-bus.role}) resolve the leg, create its x-rod (by {@code rod-class})
+ *       ({@code herald.<key>.messaging-bus.role}) resolve the leg, create its x-rod (by {@code rod-class})
  *       PAUSED and track it under its bus key. A role-declared ref with no leg fails fast: a service that
  *       says it uses a bus REQUIRES the topology to define it.</li>
  *   <li>{@link #start} (everything is ready) -- RUN every built rod (engine threads + transport delivery): the
@@ -125,7 +126,7 @@ public class MessagingBus implements AutoCloseable {
      * calls {@link #start()} once everything is ready. The Environment is taken the first time.
      */
     public synchronized void init(Environment environment) {
-        // SCAN form: discover the buses to build from config (every esquire.<key>.messaging-bus.role). Throws on a
+        // SCAN form: discover the buses to build from config (every herald.<key>.messaging-bus.role). Throws on a
         // discovered ref whose slot is undefined, same as the explicit form.
         init(environment, roleDeclaredBusKeys(environment).toArray(new String[0]));
     }
@@ -285,7 +286,7 @@ public class MessagingBus implements AutoCloseable {
     }
 
     /** Every bus key whose service-level ref declares a {@code role} (the refs to BUILD): scan the Environment
-     *  for {@code esquire.<key>.messaging-bus.role} property names. A ref with no role is NOT built here (e.g.
+     *  for {@code herald.<key>.messaging-bus.role} property names. A ref with no role is NOT built here (e.g.
      *  audit, driven by its own procedure). */
     private static Set<String> roleDeclaredBusKeys(Environment environment) {
         Set<String> ret = new LinkedHashSet<>();
@@ -311,7 +312,7 @@ public class MessagingBus implements AutoCloseable {
         return (app != null ? app : "") + "." + HostId.instanceNo();
     }
 
-    /** Resolve a logical bus key: the service-level ref esquire.&lt;key&gt;.messaging-bus -> {bus-id, slot-id,
+    /** Resolve a logical bus key: the service-level ref herald.&lt;key&gt;.messaging-bus -> {bus-id, slot-id,
      *  role, x-rod}. */
     private BusRef busRef(String busKey) {
         return Binder.get(environment).bind(BusConstants.CONFIG_ROOT + "." + busKey + ".messaging-bus",

@@ -52,7 +52,7 @@
    Herald is a single Product but it has a set of projects.
    They might have their own versioning
 -->
-        <herald.version>2.0.0</herald.version>
+        <herald.version>2.0.1</herald.version>
         <messaging.version>${herald.version}</messaging.version>
         <dataKeep.version>${herald.version}</dataKeep.version>
         <tp.version>${herald.version}</tp.version>
@@ -72,6 +72,8 @@
         <maven.resources.version>3.3.1</maven.resources.version>
         <maven.dependency.version>3.7.0</maven.dependency.version>
         <maven.surefire.version>3.2.5</maven.surefire.version>
+        <maven.deploy.version>3.1.4</maven.deploy.version>
+        <flatten.version>1.7.3</flatten.version>
         <jacoco.version>0.8.13</jacoco.version>
     </properties>
 
@@ -141,6 +143,12 @@
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>${maven.dependency.version}</version>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven.deploy.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -148,6 +156,42 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
+            </plugin>
+            <!--xxx: the parent stays at its own version while the projects move on herald.version, so a
+                published pom must not need it: flatten writes the real versions in and drops the parent -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>${flatten.version}</version>
+                <configuration>
+                    <flattenMode>oss</flattenMode>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--xxx: the parent is not published: the registry takes its version only once -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <inherited>false</inherited>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <!-- Code coverage: prepare-agent instruments the forked test JVM (surefire), so every test that
                  runs in it is measured: the unit tests and the in-JVM Testcontainers / @SpringBootTest

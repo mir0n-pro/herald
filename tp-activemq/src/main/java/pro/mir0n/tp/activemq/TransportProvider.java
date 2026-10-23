@@ -45,6 +45,10 @@
  *                   excluded from withParams -- the broker URI is written to the develop log on every open,
  *                   so a credential carried as a URI option would be written there too
  * 10/13/2026 mir0n  v2.0.0 -- moved into Herald: package pro.mir0n.esquire.tp.activemq -> pro.mir0n.tp.activemq
+ * 10/20/2026 mir0n  v2.0.1 -- PARAM_TIME_TO_LIVE_MS ("timeToLiveMs") added: how long a sent message may wait
+ *                   for a consumer, read from transport.params; > 0 is applied with setTimeToLive on the
+ *                   publisher's JmsTemplate, absent or 0 = no expiry. Excluded from withParams (a setter, not a
+ *                   broker-URI option); the publisher-opened devLog line carries timeToLiveMs=
  */
 package pro.mir0n.tp.activemq;
 
@@ -102,6 +106,12 @@ public final class TransportProvider implements ITransportProvider {
      *  broker will see it, instead of hidden in a file they will never open. */
     private static final String PARAM_PERSISTENT = "persistent";
 
+    /** How long a sent message may wait for a consumer, in ms ({@code transport.params.timeToLiveMs}). Absent or 0
+     *  = no expiry. Past it the broker drops the message instead of delivering it -- on a request leg, a command
+     *  nobody waits for any more. The broker judges expiry by the SENDER's clock. A setter, so it is excluded from
+     *  {@link #withParams}. */
+    private static final String PARAM_TIME_TO_LIVE_MS = "timeToLiveMs";
+
     /** The broker user, carried as a vendor param ({@code transport.params.userName}). Absent = an anonymous
      *  connection, which is what a broker of our own is set up for; a managed broker (Amazon MQ) always demands
      *  one. Applied with a setter and excluded from {@link #withParams} -- and here the exclusion is the whole
@@ -138,8 +148,12 @@ public final class TransportProvider implements ITransportProvider {
         // setDeliveryPersistent is silently a no-op and every send stays PERSISTENT.
         jms.setExplicitQosEnabled(true);
         jms.setDeliveryPersistent(persistent);
-        devLog.info("tp-activemq: publisher opened on {} (broker={}, {}, poolSize={}, persistent={})",
-                destination, brokerUrl, pubSub ? "topic" : "queue", s.poolSize(), persistent);
+        long timeToLiveMs = Long.parseLong(s.param(PARAM_TIME_TO_LIVE_MS, "0"));
+        if (timeToLiveMs > 0) {
+            jms.setTimeToLive(timeToLiveMs);
+        }
+        devLog.info("tp-activemq: publisher opened on {} (broker={}, {}, poolSize={}, persistent={}, timeToLiveMs={})",
+                destination, brokerUrl, pubSub ? "topic" : "queue", s.poolSize(), persistent, timeToLiveMs);
 
         // close() (on the returned handle) releases the caching connection factory (the cached connection +
         // sessions); the underlying ActiveMQConnectionFactory holds no connection of its own. The handle carries
@@ -263,9 +277,9 @@ public final class TransportProvider implements ITransportProvider {
             for (Map.Entry<String, String> e : params.entrySet()) {
                 if (PARAM_PUBSUB_DOMAIN.equals(e.getKey()) || BusConstants.PARAM_NO_LOCAL.equals(e.getKey())
                         || PARAM_PERSISTENT.equals(e.getKey()) || PARAM_USERNAME.equals(e.getKey())
-                        || PARAM_PASSWORD.equals(e.getKey())) {
-                    continue;   // applied via a setter (setPubSubDomain / setPubSubNoLocal /
-                                // setDeliveryPersistent / setUserName / setPassword), not a broker-URI option
+                        || PARAM_PASSWORD.equals(e.getKey()) || PARAM_TIME_TO_LIVE_MS.equals(e.getKey())) {
+                    continue;   // applied via a setter (setPubSubDomain / setPubSubNoLocal / setDeliveryPersistent /
+                                // setUserName / setPassword / setTimeToLive), not a broker-URI option
                 }
                 q.append(q.length() == 0 ? "" : "&").append(e.getKey()).append('=').append(e.getValue());
             }

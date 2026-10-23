@@ -25,6 +25,8 @@
  *                   so the bus lifecycle runs it in its init phase; consumeSelector doc BROADCAST -> single-node;
  *                   javadoc XRodManager -> MessagingBus.
  * 10/13/2026 mir0n  v2.0.0 -- moved into Herald: package pro.mir0n.esquire.messaging -> pro.mir0n.messaging
+ * 10/19/2026 mir0n  v2.0.1 -- the javadoc names the catalog key herald.messaging-bus and the bus refs
+ *                   herald.<bus-key>.messaging-bus
  */
 package pro.mir0n.messaging.catalog;
 
@@ -47,11 +49,11 @@ import java.util.Set;
 
 /**
  * Resolves messaging-bus legs and builds their transport settings. The catalog is the shared cross-service
- * {@code esquire.messaging-bus} (imported from the one topology file) MERGED with a service's OWN overlay,
+ * {@code herald.messaging-bus} (imported from the one topology file) MERGED with a service's OWN overlay,
  * declared in its application.yml under its OWN namespace {@code <spring.application.name>.messaging-bus}
  * (e.g. {@code enyman.messaging-bus} -- its own in-process leg, whose datasource is service-specific).
  * The overlay REPLACES a shared bus/slot with the same id (and adds new ones); both are full legs and bind
- * identically. The service namespace keeps the key clear of the {@code esquire.<bus-key>.messaging-bus} refs.
+ * identically. The service namespace keeps the key clear of the {@code herald.<bus-key>.messaging-bus} refs.
  * A service-level x-rod ref override is layered on top at resolve time (see {@code MessagingBus}).
  *
  * <p>A leg is named by {@code (bus-id, slot-id)}; its {@link XRodParams} is the BASE. For a feature that wires
@@ -71,7 +73,7 @@ public class MessagingBusCatalog {
     }
 
     /**
-     * Load + validate the catalog: bind the shared topology ({@code esquire.messaging-bus}) and MERGE this
+     * Load + validate the catalog: bind the shared topology ({@code herald.messaging-bus}) and MERGE this
      * service's overlay ({@code <app>.messaging-bus}) onto it BY ID -- a service bus REPLACES the shared bus with
      * the same bus-id (a service slot replaces the shared slot with the same slot-id; a new bus/slot is added).
      * Bound as two lists, NOT a single key across two sources (Spring binds lists by INDEX, so a higher-precedence

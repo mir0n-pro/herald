@@ -1,5 +1,9 @@
 herald Kafka transport provider classes -- pro.mir0n.tp.kafka
 
+10/22/2026 mir0n  v2.0.1 -- the default consumer group named after Herald
+TransportProvider
+  - DEFAULT_GROUP_ID = "herald-xxrod-audit" (was "esquire-xxrod-audit")
+
 10/13/2026 mir0n  v2.0.0 -- the transport provider moves into Herald
 META-INF/spring.factories
   - the AutoConfigurationImportFilter class name follows the package: pro.mir0n.tp.kafka.TpKafkaAutoConfigFilter

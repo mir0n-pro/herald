@@ -1,6 +1,6 @@
 <table style="width: 100%; table-layout: fixed;">
   <tr>
-    <td style="width: 12%"><img src="logo/herald.3.svg" alt="Herald logo" align="right" width="64" height="64"></td>
+    <td style="width: 12%"><img src="logo/herald.5.svg" alt="Herald logo" align="right" width="64" height="64"></td>
     <td style="width: 88%;"><h1>Herald Messaging Bus -- Guides (DRAFT)</h1></td>
   </tr>
 </table>
@@ -25,10 +25,10 @@ send on it or attach a handler. That is the whole idea.
 ### Step 1 -- describe the bus (config)
 
 Two small pieces of config. First, the SHARED catalog (one file every service imports) says what each bus is on
-the wire. The configuration root is `esquire` today, and the bus in the example is Esquire's entity bus:
+the wire. The configuration root is `herald`, and the bus in the example is Esquire's entity bus:
 
 ```yaml
-esquire:
+herald:
   messaging-bus:
     - bus-id: esquire.entity
       slots:
@@ -45,7 +45,7 @@ esquire:
 Second, YOUR service says which buses it uses and what part it plays:
 
 ```yaml
-esquire:
+herald:
   entity:                                        # a logical KEY you pick
     messaging-bus:
       bus-id: esquire.entity
